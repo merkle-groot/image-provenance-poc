@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+*.key
+
+# Local planning and agent instructions
+/IMPLEMENTATION_PLAN.md
+/POC_PLAN.md
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.cursor/
+.claude/
+.codex/
+.github/copilot-instructions.md
