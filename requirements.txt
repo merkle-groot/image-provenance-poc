@@ -1,2 +1,4 @@
 Pillow==11.3.0
 ImageHash==4.3.2
+opencv-python-headless>=4.9.0
+cryptography>=44.0.0

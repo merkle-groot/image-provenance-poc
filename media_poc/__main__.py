@@ -1,7 +1,16 @@
 import argparse
 import json
-from .core import register_asset, verify_media
-from .watermark import generate_key, embed, verify
+from .core import media_kind, register_asset, verify_media
+from . import watermark
+from .watermark import generate_key
+
+
+def engine(file):
+    if media_kind(file) == 'video':
+        from . import video
+        return video
+    return watermark
+
 
 parser = argparse.ArgumentParser(description='Local media POC')
 sub = parser.add_subparsers(dest='command', required=True)
@@ -28,7 +37,7 @@ elif args.command == 'keygen':
     generate_key(args.keyfile)
     result = {'key_created': args.keyfile}
 elif args.command == 'watermark':
-    result = embed(args.file, args.output, args.key)
+    result = engine(args.file).embed(args.file, args.output, args.key)
 else:
-    result = verify(args.file, args.key)
+    result = engine(args.file).verify(args.file, args.key)
 print(json.dumps(result, indent=2))
