@@ -1,4 +1,8 @@
-"""Loopback-only web interface for the local proof of concept."""
+"""Web interface for the proof of concept.
+
+The server listens on loopback only; to publish it, put an HTTPS reverse proxy in
+front and set MEDIA_POC_ORIGIN to the public origin (e.g. https://example.com).
+"""
 import base64
 import binascii
 import json
@@ -28,6 +32,8 @@ def engine(kind):
 WEB = Path(__file__).resolve().parent.parent / 'web'
 MAX_UPLOAD_MB = int(os.environ.get('MEDIA_POC_MAX_UPLOAD_MB', '50'))
 CHUNK = 1024 * 1024
+# Extra origin allowed to POST, for a deployment behind a reverse proxy.
+PUBLIC_ORIGIN = os.environ.get('MEDIA_POC_ORIGIN', '').rstrip('/')
 
 
 JOB_TTL = 3600
@@ -132,7 +138,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         origin = self.headers.get('Origin')
-        if origin and origin not in (f'http://127.0.0.1:{self.server.server_port}', f'http://localhost:{self.server.server_port}'):
+        allowed = {f'http://127.0.0.1:{self.server.server_port}', f'http://localhost:{self.server.server_port}', PUBLIC_ORIGIN} - {''}
+        if origin and origin not in allowed:
             self.send_error(403); return
         # Raw bodies with custom headers force a CORS preflight, which cross-site pages cannot pass.
         if self.headers.get_content_type() != 'application/octet-stream':
@@ -209,7 +216,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     port = int(os.environ.get('MEDIA_POC_PORT', '8765'))
     server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
-    print(f'Open http://127.0.0.1:{port} in your browser. Press Ctrl+C to stop.', flush=True)
+    print(f'Listening on http://127.0.0.1:{port}' + (f' (public origin {PUBLIC_ORIGIN})' if PUBLIC_ORIGIN else '') + '. Press Ctrl+C to stop.', flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass
     finally: server.server_close()

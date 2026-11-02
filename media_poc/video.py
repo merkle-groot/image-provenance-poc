@@ -170,7 +170,7 @@ def embed(source, output, key_path, progress=None):
     if not fps or not width or not height or width % 2 or height % 2:
         cap.release()
         raise ValueError('Video needs a valid frame rate and even frame dimensions.')
-    command = ['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', f'{width}x{height}', '-r', str(fps), '-i', 'pipe:0', '-i', str(source), '-map', '0:v:0', '-map', '1:a?', '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', str(output)]
+    command = ['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', f'{width}x{height}', '-r', str(fps), '-i', 'pipe:0', '-i', str(source), '-map', '0:v:0', '-map', '1:a?', '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-shortest_buf_duration', '1', str(output)]
     try:
         proc = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     except FileNotFoundError:
